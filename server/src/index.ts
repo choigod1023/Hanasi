@@ -16,14 +16,14 @@ if (!process.env.OPENAI_API_KEY) {
 }
 
 const app: Express = express();
-const port = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
 
 // GPT 토픽 생성 API
-app.post("/api/generate-topic", generateTopic);
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+app.post("/api/generate-topic", (req: Request, res: Response) => {
+  return generateTopic(req, res);
 });
+
+// Vercel에서 실행될 때는 app을 export
+export default app;
