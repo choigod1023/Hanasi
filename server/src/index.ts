@@ -2,6 +2,12 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import { generateTopic } from "./controllers/topicController";
 
+// 로컬 개발 환경에서만 dotenv 사용
+if (process.env.NODE_ENV !== "production") {
+  const dotenv = require("dotenv");
+  dotenv.config();
+}
+
 if (!process.env.OPENAI_API_KEY) {
   console.error("OPENAI_API_KEY is not set");
   process.exit(1);
@@ -27,6 +33,7 @@ app.get("/api/health", (req: Request, res: Response) => {
     res.json({
       status: "ok",
       openai: !!process.env.OPENAI_API_KEY,
+      environment: process.env.NODE_ENV,
     });
   } catch (error) {
     console.error("Health check error:", error);
