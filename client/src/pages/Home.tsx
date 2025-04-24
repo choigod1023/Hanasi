@@ -6,10 +6,14 @@ import { useTopicStore } from "../store/useTopicStore";
 import { Topic } from "../types/topic";
 
 export const Home = () => {
-  const { topics, filter, settings } = useTopicStore();
+  const { topics, filter, settings, generateGptTopics } = useTopicStore();
   const [randomTopic, setRandomTopic] = useState<Topic | null>(null);
   const [gptTopic, setGptTopic] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    generateGptTopics();
+  }, [filter, generateGptTopics]);
 
   const generateGptTopic = async () => {
     if (!filter.relationship || !filter.mood || !filter.situation) {
@@ -20,17 +24,20 @@ export const Home = () => {
       setIsLoading(true);
       setGptTopic(null); // 이전 결과 초기화
 
-      const response = await fetch("http://localhost:3001/api/generate-topic", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          relationship: filter.relationship,
-          mood: filter.mood,
-          situation: filter.situation,
-        }),
-      });
+      const response = await fetch(
+        "https://hanasi-server.vercel.app/api/generate-topic",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            relationship: filter.relationship,
+            mood: filter.mood,
+            situation: filter.situation,
+          }),
+        }
+      );
       console.log({
         relationship: filter.relationship,
         mood: filter.mood,
@@ -74,12 +81,12 @@ export const Home = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pastel-pink via-pastel-lavender to-pastel-sky">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container px-4 py-8 mx-auto">
         <div className="mb-8">
-          <h1 className="mb-4 text-3xl font-bold text-romantic-title text-center">
+          <h1 className="mb-4 text-3xl font-bold text-center text-romantic-title">
             대화 주제
           </h1>
-          <div className="max-w-2xl mx-auto bg-white/50 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+          <div className="max-w-2xl p-6 mx-auto shadow-lg bg-white/50 backdrop-blur-sm rounded-xl">
             <TopicFilter />
           </div>
         </div>
@@ -87,7 +94,7 @@ export const Home = () => {
         <div className="max-w-2xl mx-auto">
           {settings.gptMode ? (
             <>
-              <div className="mb-4 flex justify-center">
+              <div className="flex justify-center mb-4">
                 <button
                   onClick={generateGptTopic}
                   disabled={
@@ -110,18 +117,18 @@ export const Home = () => {
                 </button>
               </div>
               {isLoading ? (
-                <div className="h-48 rounded-xl bg-white/50 backdrop-blur-sm p-6 shadow-lg">
-                  <p className="text-romantic-text text-center">
+                <div className="h-48 p-6 shadow-lg rounded-xl bg-white/50 backdrop-blur-sm">
+                  <p className="text-center text-romantic-text">
                     주제를 생성하는 중입니다...
                   </p>
                 </div>
               ) : gptTopic ? (
-                <div className="h-48 rounded-xl bg-white/50 backdrop-blur-sm p-6 shadow-lg">
+                <div className="h-48 p-6 shadow-lg rounded-xl bg-white/50 backdrop-blur-sm">
                   <p className="text-romantic-text">{gptTopic}</p>
                 </div>
               ) : (
-                <div className="h-48 rounded-xl bg-white/50 backdrop-blur-sm p-6 shadow-lg">
-                  <p className="text-romantic-text text-center">
+                <div className="h-48 p-6 shadow-lg rounded-xl bg-white/50 backdrop-blur-sm">
+                  <p className="text-center text-romantic-text">
                     {!filter.relationship || !filter.mood || !filter.situation
                       ? "모든 조건을 선택해주세요."
                       : "생성 버튼을 눌러주세요."}
@@ -132,8 +139,8 @@ export const Home = () => {
           ) : randomTopic ? (
             <TopicCard topic={randomTopic} />
           ) : (
-            <div className="h-48 rounded-xl bg-white/50 backdrop-blur-sm p-6 shadow-lg">
-              <p className="text-romantic-text text-center">
+            <div className="h-48 p-6 shadow-lg rounded-xl bg-white/50 backdrop-blur-sm">
+              <p className="text-center text-romantic-text">
                 선택한 조건에 맞는 주제가 없습니다.
               </p>
             </div>
