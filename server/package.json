@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "tsc"
+    "build": "tsc && cp -r src/controllers dist/",
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "cors": "^2.8.5",
