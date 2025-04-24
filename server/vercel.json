@@ -8,9 +8,17 @@
   ],
   "routes": [
     {
+      "src": "/api/health",
+      "dest": "src/index.ts",
+      "methods": ["GET"]
+    },
+    {
       "src": "/api/generate-topic",
       "dest": "src/index.ts",
       "methods": ["POST"]
+    },
+    {
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
