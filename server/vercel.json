@@ -8,7 +8,12 @@
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
+      "src": "/api/generate-topic",
+      "dest": "src/index.ts",
+      "methods": ["POST"]
+    },
+    {
+      "src": "/(.*)",
       "dest": "src/index.ts"
     }
   ]

@@ -20,6 +20,11 @@ const app: Express = express();
 app.use(cors());
 app.use(express.json());
 
+// Health check endpoint
+app.get("/api/health", (req: Request, res: Response) => {
+  res.json({ status: "ok" });
+});
+
 // GPT 토픽 생성 API
 app.post("/api/generate-topic", async (req: Request, res: Response) => {
   try {
