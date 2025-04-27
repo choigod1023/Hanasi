@@ -1,19 +1,10 @@
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import { generateTopic } from "./controllers/topicController";
-
-// 로컬 개발 환경에서만 dotenv 사용
-if (process.env.NODE_ENV !== "production") {
-  const dotenv = require("dotenv");
-  dotenv.config();
-}
-
-if (!process.env.OPENAI_API_KEY) {
-  console.error("OPENAI_API_KEY is not set");
-  process.exit(1);
-}
+import "./config"; // 환경 변수 설정을 위해 import
 
 const app: Express = express();
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
@@ -42,18 +33,21 @@ app.get("/api/health", (req: Request, res: Response) => {
 });
 
 // GPT 토픽 생성 API
-app.post("/api/generate-topic", async (req: Request, res: Response) => {
+app.post("/api/topics/generate", async (req: Request, res: Response) => {
   try {
-    console.log("Received request:", req.body);
+    const { relationship, mood, situation } = req.body;
     await generateTopic(req, res);
   } catch (error) {
-    console.error("Error in generate-topic route:", error);
-    res.status(500).json({
-      error: "Internal server error",
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
+    console.error("Error generating topic:", error);
+    res.status(500).json({ error: "Failed to generate topic" });
   }
 });
 
 // Vercel에서 실행될 때는 app을 export
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    // Server started
+  });
+}
+
 export default app;

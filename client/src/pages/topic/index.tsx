@@ -1,11 +1,10 @@
-// src/pages/Home.tsx
-import { TopicCard } from "./topic/components/TopicCard";
-import { TopicFilter } from "./topic/components/TopicFilter";
-import { useTopicStore } from "../store/useTopicStore";
-import { useRandomTopic, useGptTopic } from "../hooks/useTopics";
+import { TopicFilter } from "./components/TopicFilter";
+import { useTopicStore } from "../../store/useTopicStore";
+import { useRandomTopic, useGptTopic } from "../../hooks/useTopics";
 import { match, P } from "ts-pattern";
-import { Button } from "./ui/Button";
-import { Topic } from "../types/topic";
+import { TopicCard } from "./components/TopicCard";
+import { Button } from "../ui/Button";
+import { Topic } from "../../types/topic";
 
 export const Home = () => {
   const { filter, settings } = useTopicStore();
@@ -41,15 +40,19 @@ export const Home = () => {
         <TopicCard topic={null} isError />
       ))
       .with(
-        { settings: { gptMode: true }, gptTopic: P.string },
+        {
+          settings: { gptMode: true },
+          gptTopic: P.not(P.nullish),
+          isFilterComplete: true,
+        },
         ({ gptTopic }) => (
           <TopicCard
             topic={{
-              id: `gpt-${Date.now()}`,
+              id: `gpt-topic-${Date.now()}`,
               content: gptTopic,
-              relationship: filter.relationship || "친구",
-              mood: filter.mood || "설렘",
-              situation: filter.situation || "일상",
+              relationship: filter.relationship!,
+              mood: filter.mood!,
+              situation: filter.situation!,
             }}
           />
         )
@@ -59,6 +62,9 @@ export const Home = () => {
       ))
       .with({ randomTopic: P.not(P.nullish) }, ({ randomTopic }) => (
         <TopicCard topic={randomTopic as unknown as Topic} />
+      ))
+      .with({ randomTopic: P.nullish }, () => (
+        <TopicCard topic={null} isPrompt isFilterComplete={isFilterComplete} />
       ))
       .otherwise(() => <TopicCard topic={null} />);
 
@@ -83,7 +89,6 @@ export const Home = () => {
                 variant={
                   !isFilterComplete || isGptLoading ? "secondary" : "primary"
                 }
-                isLoading={isGptLoading}
               >
                 {isGptLoading ? "생성 중..." : "주제 생성하기"}
               </Button>

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import OpenAI from "openai";
+import { config } from "../config";
 
 interface TopicRequest {
   relationship: string;
@@ -7,8 +8,9 @@ interface TopicRequest {
   situation: string;
 }
 
+// OpenAI 클라이언트 초기화
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: config.openaiApiKey,
 });
 
 export const generateTopic = async (
@@ -16,10 +18,6 @@ export const generateTopic = async (
   res: Response
 ) => {
   try {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY is not set");
-    }
-
     const { relationship, mood, situation } = req.body;
 
     if (!relationship || !mood || !situation) {
@@ -31,7 +29,7 @@ export const generateTopic = async (
 - 기분: ${mood}
 - 상황: ${situation}
 
-주제는 자연스럽고 대화하기 좋은 내용이어야 합니다. 대화를 이어갈 수 있도록 대화를 유도하게끔 말해주세요. 상대방이 불쾌하지 않게 위트있고 터프하게 만들어주세요. 문장은 반말어투로 만들어주세요. 느끼하거나 오글거리는 문장이면 절대 안됩니다.`;
+주제는 자연스럽고 대화하기 좋은 내용이어야 합니다. 대화를 이어갈 수 있도록 대화를 유도하게끔 말해주세요. 상대방이 불쾌하지 않게 위트있고 터프하게 만들어주세요. 문장은 반말어투로 만들어주세요. 느끼하거나 오글거리는 문장이면 절대 안됩니다. 휴대폰으로 문자를 주고받는 상황입니다.`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",

@@ -1,18 +1,53 @@
 // src/types/topic.ts
-export type RelationType = "썸" | "연애" | "친구" | "어색한 사이";
-export type MoodType = "설렘" | "지루함" | "진지함" | "장난";
-export type SituationType = "첫 만남" | "고백 전" | "싸운 후" | "일상";
+import { RelationshipType, MoodType, SituationType } from "../constants/topic";
+
+export type FilterType = "relationship" | "mood" | "situation";
+export type FilterValue = RelationshipType | MoodType | SituationType;
 
 export interface Topic {
   id: string;
   content: string;
-  relationship: RelationType;
+  relationship: RelationshipType;
   mood: MoodType;
   situation: SituationType;
 }
 
+export interface FilterSectionProps {
+  label: string;
+  type: FilterType;
+  values: FilterValue[];
+  currentValue: FilterValue | null;
+  onSelect: (value: FilterValue) => void;
+}
+
+export interface TopicCardProps {
+  topic: Topic | null;
+  isLoading?: boolean;
+  isError?: boolean;
+  isPrompt?: boolean;
+  isFilterComplete?: boolean;
+}
+
+export interface TopicActionsProps {
+  topic: Topic;
+  isFavorite: boolean;
+  isAdding?: boolean;
+  isRemoving?: boolean;
+  onFavoriteToggle: () => void;
+}
+
+export interface TopicTagProps {
+  type: FilterType;
+  value: string;
+  variant?: "default" | "small";
+}
+
 export interface TopicFilter {
-  relationship: RelationType | null;
+  relationship: RelationshipType | null;
   mood: MoodType | null;
   situation: SituationType | null;
+}
+
+export interface TopicSettings {
+  gptMode: boolean;
 }
