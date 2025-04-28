@@ -1,16 +1,12 @@
 import React from "react";
-import { match } from "ts-pattern";
-
-type ButtonVariant = "primary" | "secondary" | "ghost" | "filter" | "nav";
-type ButtonSize = "sm" | "md" | "lg";
-
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  isActive?: boolean;
-  icon?: React.ReactNode;
-  isLoading?: boolean;
-}
+import { match, P } from "ts-pattern";
+import { ButtonProps } from "../../types/ui";
+import {
+  buttonBaseStyles,
+  buttonVariantStyles,
+  buttonActiveStyles,
+  buttonSizeStyles,
+} from "../../styles/button";
 
 export const Button: React.FC<ButtonProps> = ({
   variant = "primary",
@@ -22,53 +18,31 @@ export const Button: React.FC<ButtonProps> = ({
   className = "",
   ...props
 }) => {
-  const baseStyles = "transition-all rounded-full font-medium";
-
-  const variantStyles = match({ variant, isActive })
-    .with(
-      { variant: "primary" },
-      () => "bg-romantic-text text-white hover:bg-romantic-title"
-    )
-    .with(
-      { variant: "secondary" },
-      () => "bg-white/50 text-romantic-subtitle hover:bg-soft-pink"
-    )
-    .with({ variant: "ghost" }, () => "hover:bg-soft-pink")
-    .with({ variant: "filter" }, () =>
-      isActive
-        ? "bg-soft-rose font-medium text-romantic-text shadow-sm"
-        : "bg-white/80 text-romantic-subtitle hover:bg-soft-pink"
-    )
-    .with({ variant: "nav" }, () =>
-      isActive
-        ? "text-romantic-600"
-        : "text-romantic-400 hover:text-romantic-500"
-    )
-    .exhaustive();
-
-  const sizeStyles = match(size)
-    .with("sm", () => "px-2 py-1 text-xs")
-    .with("md", () => "px-4 py-2 text-sm")
-    .with("lg", () => "px-6 py-3 text-base")
-    .exhaustive();
+  const variantStyle = isActive
+    ? buttonActiveStyles[variant] || buttonVariantStyles[variant]
+    : buttonVariantStyles[variant];
 
   return (
     <button
-      className={`${baseStyles} ${variantStyles} ${sizeStyles} ${className} flex items-center`}
+      className={`${buttonBaseStyles} ${variantStyle} ${buttonSizeStyles[size]} ${className} flex items-center`}
       disabled={isLoading}
       {...props}
     >
-      {isLoading ? (
-        <div className="flex items-center justify-center">
-          <div className="w-4 h-4 mr-2 border-2 border-white rounded-full border-t-transparent animate-spin" />
-          {children}
-        </div>
-      ) : (
-        <>
-          {icon && <span className="mr-2">{icon}</span>}
-          {children}
-        </>
-      )}
+      {match({ isLoading, icon })
+        .with({ isLoading: true }, () => (
+          <div className="flex items-center justify-center">
+            <div className="w-4 h-4 mr-2 border-2 border-white rounded-full border-t-transparent animate-spin" />
+            {children}
+          </div>
+        ))
+        .with({ isLoading: false, icon: P.not(P.nullish) }, () => (
+          <>
+            <span className="mr-2">{icon}</span>
+            {children}
+          </>
+        ))
+        .with({ isLoading: false }, () => children)
+        .exhaustive()}
     </button>
   );
 };

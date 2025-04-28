@@ -2,34 +2,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { presetTopics } from "../data/topics";
 import { generateGptTopic as generateGptTopicApi } from "../api/topicApi";
 import { Topic, TopicFilter } from "../types/topic";
-import { useFavoriteStore } from "../store/useFavoriteStore";
-
-// 토픽 필터링 로직
-const filterTopics = (topics: Topic[], filter: TopicFilter) => {
-  return topics.filter((t) => {
-    const matchRelationship =
-      !filter.relationship || t.relationship === filter.relationship;
-    const matchMood = !filter.mood || t.mood === filter.mood;
-    const matchSituation =
-      !filter.situation || t.situation === filter.situation;
-
-    return matchRelationship && matchMood && matchSituation;
-  });
-};
-
-// 랜덤 토픽 선택
-export const useRandomTopic = (filter: TopicFilter, enabled: boolean) => {
-  return useQuery({
-    queryKey: ["randomTopic", filter],
-    queryFn: async () => {
-      const filteredTopics = filterTopics(presetTopics, filter);
-      if (filteredTopics.length === 0) return null;
-      const randomIndex = Math.floor(Math.random() * filteredTopics.length);
-      return filteredTopics[randomIndex];
-    },
-    enabled,
-  });
-};
+import { favoriteStore } from "../store/FavoriteStore";
+import { historyStore } from "../store/HistoryStore";
+import { filterTopics, getRandomTopic } from "../utils/topicUtils";
 
 // GPT 토픽 생성
 export const useGptTopic = (filter: TopicFilter) => {
@@ -42,6 +17,15 @@ export const useGptTopic = (filter: TopicFilter) => {
   });
 };
 
+// 랜덤 토픽 선택
+export const useRandomTopic = (filter: TopicFilter) => {
+  return useQuery({
+    queryKey: ["randomTopic", filter],
+    queryFn: () => filterTopics(presetTopics, filter),
+    select: (filteredTopics) => getRandomTopic(filteredTopics),
+  });
+};
+
 // 필터링된 토픽 목록
 export const useFilteredTopics = (filter: TopicFilter) => {
   return useQuery({
@@ -50,25 +34,57 @@ export const useFilteredTopics = (filter: TopicFilter) => {
   });
 };
 
+// 즐겨찾기 관리
 export const useFavoriteTopics = () => {
   const queryClient = useQueryClient();
-  const { favorites, toggleFavorite } = useFavoriteStore();
+  const { favorites, addFavorite, removeFavorite } = favoriteStore();
 
   const addToFavorites = useMutation({
     mutationFn: async (topic: Topic) => {
-      toggleFavorite(topic);
+      addFavorite(topic);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["favorites"] });
+    onMutate: async (newTopic) => {
+      // 현재 쿼리를 취소
+      await queryClient.cancelQueries({ queryKey: ["favorites"] });
+
+      // 이전 상태 저장
+      const previousFavorites = queryClient.getQueryData(["favorites"]);
+
+      // 새로운 상태로 업데이트
+      queryClient.setQueryData(["favorites"], (old: Topic[] = []) => [
+        ...old,
+        newTopic,
+      ]);
+
+      return { previousFavorites };
+    },
+    onError: (err, newTopic, context) => {
+      // 에러 발생 시 이전 상태로 롤백
+      queryClient.setQueryData(["favorites"], context?.previousFavorites);
     },
   });
 
   const removeFromFavorites = useMutation({
     mutationFn: async (topicId: string) => {
-      toggleFavorite({ id: topicId } as Topic);
+      removeFavorite(topicId);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["favorites"] });
+    onMutate: async (topicId) => {
+      // 현재 쿼리를 취소
+      await queryClient.cancelQueries({ queryKey: ["favorites"] });
+
+      // 이전 상태 저장
+      const previousFavorites = queryClient.getQueryData(["favorites"]);
+
+      // 새로운 상태로 업데이트
+      queryClient.setQueryData(["favorites"], (old: Topic[] = []) =>
+        old.filter((t) => t.id !== topicId)
+      );
+
+      return { previousFavorites };
+    },
+    onError: (err, topicId, context) => {
+      // 에러 발생 시 이전 상태로 롤백
+      queryClient.setQueryData(["favorites"], context?.previousFavorites);
     },
   });
 
@@ -83,11 +99,11 @@ export const useFavoriteTopics = () => {
 
 // 히스토리 토픽 관리
 export const useHistoryTopics = () => {
-  return useQuery({
-    queryKey: ["historyTopics"],
-    queryFn: () => {
-      const history = localStorage.getItem("historyTopics");
-      return history ? JSON.parse(history) : [];
-    },
-  });
+  const { historyTopics, addToHistory, clearHistory } = historyStore();
+
+  return {
+    historyTopics,
+    addToHistory,
+    clearHistory,
+  };
 };

@@ -1,17 +1,16 @@
 // src/pages/Home.tsx
-import { TopicCard } from "./topic/components/TopicCard";
 import { TopicFilter } from "./topic/components/TopicFilter";
-import { useTopicStore } from "../store/useTopicStore";
+import { topicStore } from "../store/TopicStore";
 import { useRandomTopic, useGptTopic } from "../hooks/useTopics";
-import { match, P } from "ts-pattern";
 import { Button } from "./ui/Button";
-import { Topic } from "../types/topic";
+import { TopicContent } from "./topic/components/TopicContent";
+import { useFavorite } from "../hooks/useFavorite";
 
 export const Home = () => {
-  const { filter, settings } = useTopicStore();
+  const { filter, settings } = topicStore();
 
   // 랜덤 토픽 선택 쿼리
-  const { data: randomTopic } = useRandomTopic(filter, !settings.gptMode);
+  const { data: randomTopic } = useRandomTopic(filter);
 
   // GPT 토픽 생성 쿼리
   const {
@@ -21,46 +20,11 @@ export const Home = () => {
     isError: isGptError,
   } = useGptTopic(filter);
 
+  const { handleFavorite, isFavorite } = useFavorite(randomTopic ?? null);
+
   const isFilterComplete = Boolean(
     filter.relationship && filter.mood && filter.situation
   );
-
-  const renderContent = () =>
-    match({
-      settings,
-      isGptLoading,
-      isGptError,
-      gptTopic,
-      randomTopic,
-      isFilterComplete,
-    })
-      .with({ settings: { gptMode: true }, isGptLoading: true }, () => (
-        <TopicCard topic={null} isLoading />
-      ))
-      .with({ settings: { gptMode: true }, isGptError: true }, () => (
-        <TopicCard topic={null} isError />
-      ))
-      .with(
-        { settings: { gptMode: true }, gptTopic: P.string },
-        ({ gptTopic }) => (
-          <TopicCard
-            topic={{
-              id: `gpt-${Date.now()}`,
-              content: gptTopic,
-              relationship: filter.relationship || "친구",
-              mood: filter.mood || "설렘",
-              situation: filter.situation || "일상",
-            }}
-          />
-        )
-      )
-      .with({ settings: { gptMode: true } }, () => (
-        <TopicCard topic={null} isPrompt isFilterComplete={isFilterComplete} />
-      ))
-      .with({ randomTopic: P.not(P.nullish) }, ({ randomTopic }) => (
-        <TopicCard topic={randomTopic as unknown as Topic} />
-      ))
-      .otherwise(() => <TopicCard topic={null} />);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pastel-pink via-pastel-lavender to-pastel-sky">
@@ -89,7 +53,17 @@ export const Home = () => {
               </Button>
             </div>
           )}
-          {renderContent()}
+          <TopicContent
+            settings={settings}
+            isGptLoading={isGptLoading}
+            isGptError={isGptError}
+            gptTopic={gptTopic ?? null}
+            randomTopic={randomTopic ?? null}
+            isFilterComplete={isFilterComplete}
+            filter={filter}
+            onFavorite={handleFavorite}
+            isFavorite={isFavorite}
+          />
         </div>
       </div>
     </div>

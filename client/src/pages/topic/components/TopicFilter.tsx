@@ -1,6 +1,6 @@
 // src/components/TopicFilter.tsx
 import React from "react";
-import { useTopicStore } from "../../../store/useTopicStore";
+import { topicStore } from "../../../store/TopicStore";
 import {
   relationships,
   moods,
@@ -12,7 +12,7 @@ import {
 import { FilterSection } from "./FilterSection";
 
 export const TopicFilter: React.FC = () => {
-  const { filter, setFilter } = useTopicStore();
+  const { filter, setFilter } = topicStore();
 
   return (
     <div className="p-4 space-y-6">

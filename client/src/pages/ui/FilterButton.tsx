@@ -1,36 +1,46 @@
-import { cn } from "../../utils/classNames";
-import { commonStyles } from "../../styles/common";
+import { BaseFilterButtonProps, FilterButtonProps } from "../../types/filter";
 
-interface FilterButtonProps {
-  value: string;
-  isSelected: boolean;
-  onClick: () => void;
-  type: "relationship" | "mood" | "situation";
-}
+const SelectedFilterButton = ({
+  value,
+  onClick,
+  bgColor,
+}: BaseFilterButtonProps) => (
+  <button
+    onClick={onClick}
+    className={`rounded-lg px-4 py-2 text-sm transition-all font-medium text-romantic-text shadow-sm ${bgColor}`}
+  >
+    {value}
+  </button>
+);
+
+const UnselectedFilterButton = ({
+  value,
+  onClick,
+  bgColor,
+}: BaseFilterButtonProps) => (
+  <button
+    onClick={onClick}
+    className={`rounded-lg px-4 py-2 text-sm transition-all text-romantic-subtitle hover:text-romantic-text bg-white/80 hover:${bgColor}`}
+  >
+    {value}
+  </button>
+);
 
 export const FilterButton = ({
   value,
   isSelected,
   onClick,
-  type,
+  selectedBg,
+  hoverBg,
 }: FilterButtonProps) => {
-  const getButtonColor = () => {
-    const filterType = commonStyles.filter[type];
-    return isSelected ? filterType.selected : filterType.hover;
-  };
-
+  const ButtonComponent = isSelected
+    ? SelectedFilterButton
+    : UnselectedFilterButton;
   return (
-    <button
+    <ButtonComponent
+      value={value}
       onClick={onClick}
-      className={cn(
-        commonStyles.button.base,
-        isSelected
-          ? commonStyles.button.primary
-          : commonStyles.button.secondary,
-        !isSelected && getButtonColor()
-      )}
-    >
-      {value}
-    </button>
+      bgColor={isSelected ? selectedBg : hoverBg}
+    />
   );
 };

@@ -1,25 +1,8 @@
-import { useTopicStore } from "../store/useTopicStore";
-
-const ToggleOnButton = ({ onClick }: { onClick: () => void }) => (
-  <button
-    onClick={onClick}
-    className="px-4 py-2 text-sm font-medium text-white transition-all rounded-full shadow-md bg-romantic-text"
-  >
-    ON
-  </button>
-);
-
-const ToggleOffButton = ({ onClick }: { onClick: () => void }) => (
-  <button
-    onClick={onClick}
-    className="px-4 py-2 text-sm font-medium transition-all rounded-full bg-white/50 text-romantic-subtitle hover:bg-soft-pink"
-  >
-    OFF
-  </button>
-);
+import { topicStore } from "../store/TopicStore";
+import { ToggleOnButton, ToggleOffButton } from "./ui/ToggleButton";
 
 export const Settings = () => {
-  const { settings, toggleGptMode } = useTopicStore();
+  const { settings, toggleGptMode } = topicStore();
 
   return (
     <div className="space-y-8">

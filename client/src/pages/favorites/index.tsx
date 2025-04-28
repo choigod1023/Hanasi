@@ -1,24 +1,8 @@
-import { TopicCard } from "../topic/components/TopicCard";
 import { useFavoriteTopics } from "../../hooks/useTopics";
-import { match } from "ts-pattern";
+import { FavoritesList } from "./components/FavoritesList";
 
 export const Favorites = () => {
-  const { favorites } = useFavoriteTopics();
-
-  const renderContent = () =>
-    match(favorites)
-      .with([], () => (
-        <div className="max-w-2xl p-6 mx-auto mt-8 text-center shadow-lg rounded-xl bg-white/50 backdrop-blur-sm">
-          <p className="text-romantic-text">아직 저장된 주제가 없습니다.</p>
-        </div>
-      ))
-      .otherwise((favorites) => (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {favorites.map((topic) => (
-            <TopicCard key={topic.id} topic={topic} />
-          ))}
-        </div>
-      ));
+  const { favorites, removeFromFavorites } = useFavoriteTopics();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pastel-pink via-pastel-lavender to-pastel-sky">
@@ -28,7 +12,7 @@ export const Favorites = () => {
             즐겨찾기
           </h1>
         </div>
-        {renderContent()}
+        <FavoritesList favorites={favorites} onFavorite={removeFromFavorites} />
       </div>
     </div>
   );

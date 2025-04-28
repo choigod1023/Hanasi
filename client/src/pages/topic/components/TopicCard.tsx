@@ -1,9 +1,6 @@
-// src/components/TopicCard.tsx
-import { ShareIcon } from "@heroicons/react/24/outline";
-import { TopicCardProps, Topic } from "../../../types/topic";
-import { useFavoriteTopics } from "../../../hooks/useTopics";
-import { match } from "ts-pattern";
+import { TopicCardProps } from "../../../types/topic";
 import { TopicActions } from "./TopicActions";
+import { match } from "ts-pattern";
 
 export const TopicCard = ({
   topic,
@@ -11,36 +8,9 @@ export const TopicCard = ({
   isError = false,
   isPrompt = false,
   isFilterComplete = false,
+  onFavorite,
+  isFavorite,
 }: TopicCardProps) => {
-  const {
-    favorites,
-    addToFavorites,
-    removeFromFavorites,
-    isAdding,
-    isRemoving,
-  } = useFavoriteTopics();
-
-  const isFavorite = favorites.some((f) => f.id === topic?.id);
-
-  const handleFavoriteClick = () => {
-    if (topic) {
-      if (isFavorite) {
-        removeFromFavorites(topic.id);
-      } else {
-        addToFavorites(topic);
-      }
-    }
-  };
-
-  const handleShareClick = () => {
-    if (topic && navigator.share) {
-      navigator.share({
-        title: "Hanasi Topic",
-        text: topic.content,
-      });
-    }
-  };
-
   return match({ topic, isLoading, isError, isPrompt })
     .with({ isLoading: true }, () => (
       <div className="h-48 rounded-xl bg-white/50 backdrop-blur-sm p-6 shadow-lg transition-all hover:shadow-xl hover:scale-[1.02]">
@@ -84,39 +54,27 @@ export const TopicCard = ({
       </div>
     ))
     .otherwise(({ topic }) => {
-      const nonNullTopic = topic as Topic;
+      if (!topic) return null;
       return (
         <div className="h-48 rounded-xl bg-white/50 backdrop-blur-sm p-6 shadow-lg transition-all hover:shadow-xl hover:scale-[1.02]">
           <div className="flex flex-wrap gap-2 mb-4">
             <span className="px-3 py-1 text-sm rounded-full bg-soft-rose text-romantic-text">
-              {nonNullTopic.relationship}
+              {topic.relationship}
             </span>
             <span className="px-3 py-1 text-sm rounded-full bg-soft-lavender text-romantic-text">
-              {nonNullTopic.mood}
+              {topic.mood}
             </span>
             <span className="px-3 py-1 text-sm rounded-full bg-soft-peach text-romantic-text">
-              {nonNullTopic.situation}
+              {topic.situation}
             </span>
           </div>
-          <p className="line-clamp-2 text-romantic-text">
-            {nonNullTopic.content}
-          </p>
-
-          <div className="flex items-center justify-between mt-4">
+          <p className="line-clamp-2 text-romantic-text">{topic.content}</p>
+          <div className="flex items-center justify-end mt-4">
             <TopicActions
-              topic={nonNullTopic}
+              topic={topic}
               isFavorite={isFavorite}
-              isAdding={isAdding}
-              isRemoving={isRemoving}
-              onFavoriteToggle={handleFavoriteClick}
+              onFavoriteToggle={() => onFavorite(topic.id)}
             />
-
-            <button
-              onClick={handleShareClick}
-              className="p-2 transition-colors rounded-full hover:bg-soft-pink"
-            >
-              <ShareIcon className="w-6 h-6 text-romantic-subtitle" />
-            </button>
           </div>
         </div>
       );
