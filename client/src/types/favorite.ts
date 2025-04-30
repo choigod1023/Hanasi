@@ -9,4 +9,6 @@ export interface FavoriteState {
 export interface FavoritesListProps {
   favorites: Topic[];
   onFavorite: (id: string) => void;
+  isAdding: boolean;
+  isRemoving: boolean;
 }

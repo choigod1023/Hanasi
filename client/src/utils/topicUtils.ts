@@ -11,8 +11,27 @@ export const filterTopics = (topics: Topic[], filter: TopicFilter) => {
   });
 };
 
-export const getRandomTopic = (topics: Topic[]) => {
-  if (topics.length === 0) return null;
-  const randomIndex = Math.floor(Math.random() * topics.length);
-  return topics[randomIndex];
+export const getRandomTopic = (
+  topics: Topic[],
+  filter?: TopicFilter
+): Topic | null => {
+  if (!topics.length) return null;
+
+  // 필터 조건에 맞는 토픽들만 필터링
+  const filteredTopics = topics.filter((topic) => {
+    if (!filter) return true;
+
+    const matchesRelationship =
+      !filter.relationship || topic.relationship === filter.relationship;
+    const matchesMood = !filter.mood || topic.mood === filter.mood;
+    const matchesSituation =
+      !filter.situation || topic.situation === filter.situation;
+
+    return matchesRelationship && matchesMood && matchesSituation;
+  });
+
+  if (!filteredTopics.length) return null;
+
+  const randomIndex = Math.floor(Math.random() * filteredTopics.length);
+  return filteredTopics[randomIndex];
 };

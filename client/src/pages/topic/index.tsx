@@ -1,15 +1,17 @@
 import { TopicFilter } from "./components/TopicFilter";
 import { topicStore } from "../../store/TopicStore";
-import { useRandomTopic, useGptTopic } from "../../hooks/useTopics";
+import { useGptTopic } from "../../hooks/useTopics";
 import { Button } from "../ui/Button";
 import { TopicContent } from "./components/TopicContent";
 import { useFavorite } from "../../hooks/useFavorite";
+import { getRandomTopic } from "../../utils/topicUtils";
+import { presetTopics } from "../../data/topics";
 
 export const Home = () => {
   const { filter, settings } = topicStore();
 
   // 랜덤 토픽 선택 쿼리
-  const { data: randomTopic } = useRandomTopic(filter);
+  const randomTopic = getRandomTopic(presetTopics);
 
   // GPT 토픽 생성 쿼리
   const {
@@ -19,7 +21,7 @@ export const Home = () => {
     isError: isGptError,
   } = useGptTopic(filter);
 
-  const { handleFavorite, isFavorite } = useFavorite(randomTopic ?? null);
+  const { toggleFavorite, isFavorite } = useFavorite(randomTopic ?? null);
 
   const isFilterComplete = Boolean(
     filter.relationship && filter.mood && filter.situation
@@ -59,7 +61,7 @@ export const Home = () => {
             randomTopic={randomTopic ?? null}
             isFilterComplete={isFilterComplete}
             filter={filter}
-            onFavorite={handleFavorite}
+            onFavorite={toggleFavorite}
             isFavorite={isFavorite}
           />
         </div>

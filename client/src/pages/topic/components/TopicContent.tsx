@@ -32,7 +32,7 @@ export const TopicContent = ({
 
   // Use the appropriate topic for the favorite hook
   const currentTopic = settings.gptMode ? gptGeneratedTopic : randomTopic;
-  const { handleFavorite, isFavorite } = useFavorite(currentTopic);
+  const { toggleFavorite, isFavorite } = useFavorite(currentTopic);
 
   return match({
     settings,
@@ -46,7 +46,7 @@ export const TopicContent = ({
       <TopicCard
         topic={null}
         isLoading
-        onFavorite={handleFavorite}
+        onFavorite={toggleFavorite}
         isFavorite={false}
       />
     ))
@@ -54,7 +54,7 @@ export const TopicContent = ({
       <TopicCard
         topic={null}
         isError
-        onFavorite={handleFavorite}
+        onFavorite={toggleFavorite}
         isFavorite={false}
       />
     ))
@@ -69,7 +69,7 @@ export const TopicContent = ({
         return (
           <TopicCard
             topic={gptGeneratedTopic}
-            onFavorite={handleFavorite}
+            onFavorite={toggleFavorite}
             isFavorite={isFavorite(gptGeneratedTopic.id)}
           />
         );
@@ -80,14 +80,14 @@ export const TopicContent = ({
         topic={null}
         isPrompt
         isFilterComplete={isFilterComplete}
-        onFavorite={handleFavorite}
+        onFavorite={toggleFavorite}
         isFavorite={false}
       />
     ))
     .with({ randomTopic: P.not(P.nullish) }, ({ randomTopic }) => (
       <TopicCard
         topic={randomTopic}
-        onFavorite={handleFavorite}
+        onFavorite={toggleFavorite}
         isFavorite={isFavorite(randomTopic.id)}
       />
     ))
@@ -96,11 +96,11 @@ export const TopicContent = ({
         topic={null}
         isPrompt
         isFilterComplete={isFilterComplete}
-        onFavorite={handleFavorite}
+        onFavorite={toggleFavorite}
         isFavorite={false}
       />
     ))
     .otherwise(() => (
-      <TopicCard topic={null} onFavorite={handleFavorite} isFavorite={false} />
+      <TopicCard topic={null} onFavorite={toggleFavorite} isFavorite={false} />
     ));
 };
